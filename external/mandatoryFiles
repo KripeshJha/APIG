@@ -5,4 +5,4 @@ required:
   - /merge/apigateway/groups/emt-group/emt-service/conf/service-provider.xml
   - /merge/apigateway/ext/lib/mysql-connector-java-8.0.28.jar
   - /merge/apigateway/webapps/apiportal/vordel/apiportal/app/app.config
-  - /merge/fed
+  - /merge/fed.fed
