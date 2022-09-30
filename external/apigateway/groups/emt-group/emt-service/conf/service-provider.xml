@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<SSOConfiguration>
+  <CertificateValidation pathValidation="false">
+    </CertificateValidation>
+  <ServiceProvider entityId="axway-dev" useAppSessions="true" filteredUri="/sso/login" logoutUri="/sso/logout" logoutRedirectUri="/api/portal/v1.4/sso/login" keystore="/opt/axway/Axway-7.7.0/apigateway/groups/group-2/instance-1/conf/demo-api-sso.jks" keystorePassphrase="th1rt33n" keyAlias="demo-api-sso" sessionIdCookieName="spSessionId2">
+    <AssertionConsumerService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" location="/sso/login/post"/>
+    <SingleLogoutService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" location="/sso/logout/post"/>
+    <SingleLogoutService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" location="/redirect"/>
+  </ServiceProvider>
+  <IdentityProviders>
+    <SamlIdentityProvider entityId="https://sts.windows.net/1a86bb32-c02c-481b-8b67-05f7382f6446/" metadataUrl="./idp.xml" userNameAttribute="name" verifyAssertionExpiration="false" sign="true">
+      <Mappings>
+        <RenameMapping source="http://schemas.microsoft.com/identity/claims/displayname" target="userfullname"/>
+        <RenameMapping source="http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" target="mail"/>
+        <FilterMapping>
+          <Filter>(http://schemas.microsoft.com/ws/2008/06/identity/claims/role=Admin)</Filter>
+          <OutputAttribute name="role">Administrator</OutputAttribute>
+          <OutputAttribute name="organization">APEX</OutputAttribute>
+        </FilterMapping>
+        <FilterMapping>
+          <Filter>(!(http://schemas.microsoft.com/ws/2008/06/identity/claims/role=Admin))</Filter>
+          <OutputAttribute name="role">user</OutputAttribute>
+          <OutputAttribute name="organization">Community</OutputAttribute>
+        </FilterMapping>
+      </Mappings>
+      <Features>
+        <Feature key="saml-verify-metadata-signature" value="false"/>
+        <Feature key="saml-allow-unsigned-assertion" value="true"/>
+        <Feature key="saml-sign-logoutrequest" value="true"/>
+      </Features>
+    </SamlIdentityProvider>
+  </IdentityProviders>
+</SSOConfiguration>
