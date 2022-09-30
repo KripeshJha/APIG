@@ -2,7 +2,7 @@
 <SSOConfiguration>
   <CertificateValidation pathValidation="false">
     </CertificateValidation>
-  <ServiceProvider entityId="axway-dev" useAppSessions="true" filteredUri="/sso/login" logoutUri="/sso/logout" logoutRedirectUri="/api/portal/v1.4/sso/login" keystore="/opt/axway/Axway-7.7.0/apigateway/groups/group-2/instance-1/conf/demo-api-sso.jks" keystorePassphrase="th1rt33n" keyAlias="demo-api-sso" sessionIdCookieName="spSessionId2">
+  <ServiceProvider entityId="axway-dev" useAppSessions="true" filteredUri="/sso/login" logoutUri="/sso/logout" logoutRedirectUri="/api/portal/v1.4/sso/login" keystore="/opt/Axway/apigateway/groups/emt-group/emt-service/conf/demo-api-sso.jks" keystorePassphrase="th1rt33n" keyAlias="demo-api-sso" sessionIdCookieName="spSessionId2">
     <AssertionConsumerService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" location="/sso/login/post"/>
     <SingleLogoutService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" location="/sso/logout/post"/>
     <SingleLogoutService binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" location="/redirect"/>
