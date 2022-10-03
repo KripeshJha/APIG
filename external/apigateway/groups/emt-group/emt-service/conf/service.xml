@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NetService provider="NetService">
+    <!--
+    Configuration file for service.
+    Note that if you wish for the user to enter a passphrase at startup, then
+    give the "pvalue" attribute a value "(prompt)", for example:
+         pvalue="(prompt)"
+
+    Alternatively, if you wish to execute a command to obtain the passphrase
+    at startup, then specify a script or executable to execute, for example:
+        passphraseExec="&quot;$VDISTDIR/passwd.bat&quot;"
+    -->
+    <include file="serviceids.xml"/>
+    <include file="../../conf/group.xml"/>
+    <SystemSettings allowHTTP11="true" maxThreads="1024" domainID="${domainID}" groupID="${groupID}"
+        groupName="${groupName}" pvalue="${pvalue}"
+        serviceID="${serviceID}" serviceName="${serviceName}"
+        title="API Gateway" tracelevel="INFO"/>
+    <ProcessManagementService/>
+    <set property="headless" value="true"/>
+    <include file="$VDISTDIR/system/conf/platform.xml"/>
+    <include file="$VDISTDIR/system/conf/trace.xml"/>
+    <include file="$VDISTDIR/system/conf/libxml.xml"/>
+    <include file="$VDISTDIR/system/conf/jvm.xml"/>
+    <include file="vpkcs11.xml"/>
+    <include file="$VDISTDIR/system/conf/nativeJAXP.xml"/>
+    <include file="esconnection.xml"/>
+    <include file="mgmt.xml"/>
+	<!--
+		commenting this segment to allow SAML body in url encoded.
+	-->
+    <!-- <if exists="$VINSTDIR/conf/instanceRedaction.xml">
+        <include file="$VINSTDIR/conf/instanceRedaction.xml"/>
+    </if> -->
+    <includes dir="extensions" pattern="*.xml"/>
+    <!-- <if exists="$VINSTDIR/conf/waf.xml">
+        <include file="$VINSTDIR/conf/waf.xml"/>
+    </if> -->
+</NetService>
