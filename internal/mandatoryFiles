@@ -1,8 +1,5 @@
 required:
   - /merge/apigateway/ext/lib/apim-env-module-1.2.0.jar
-  - /merge/apigateway/groups/emt-group/emt-service/conf/demo-api-sso
-  - /merge/apigateway/groups/emt-group/emt-service/conf/idp.xml
-  - /merge/apigateway/groups/emt-group/emt-service/conf/service-provider.xml
   - /merge/apigateway/ext/lib/mysql-connector-java-8.0.28.jar
   - /merge/apigateway/webapps/apiportal/vordel/apiportal/app/app.config
   - /merge/fed
