@@ -29,9 +29,9 @@
 	<!--
 		commenting this segment to allow SAML body in url encoded.
 	-->
-    <!-- <if exists="$VINSTDIR/conf/instanceRedaction.xml">
+    <if exists="$VINSTDIR/conf/instanceRedaction.xml">
         <include file="$VINSTDIR/conf/instanceRedaction.xml"/>
-    </if> -->
+    </if>
     <includes dir="extensions" pattern="*.xml"/>
     <!-- <if exists="$VINSTDIR/conf/waf.xml">
         <include file="$VINSTDIR/conf/waf.xml"/>
