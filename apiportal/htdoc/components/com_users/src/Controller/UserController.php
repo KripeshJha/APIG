@@ -28,41 +28,40 @@ use Joomla\Database\ParameterType;
  */
 class UserController extends BaseController
 {
-	/**
-	 * Method to log in a user.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.6
-	 */
-	
+        /**
+         * Method to log in a user.
+         *
+         * @return  void
+         *
+         * @since   1.6
+         */
 
-public function loginoidc() {
+        public function loginoidc() {
+			try{
+				$input = $this->input->getInputForRequestMethod();
+				$code = $input->get('code', '', 'STRING');
+				$this->url=Text::_('TokenURL')."=".$code;
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL,$this->url);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$responseString = $response = curl_exec($ch);
+				$res = json_decode($responseString);
+				$username = $input->set('username',$res->user );
+				$password = $input->set('password', $responseString);
+				$this->login();
+			}catch(Exception $e){
+				// Get the error message to display.
+				$message = $app->get('error_reporting')
+						? $return->getMessage()
+						: Text::_('COM_APIPORTAL_GET_TOKEN_ERROR');
 
+				// Go back to the complete form.
+				$this->setRedirect(Route::_('index.php?option=com_users&view=login', false), $message, 'error');
+			}
+		}
 
-
-       $input = $this->input->getInputForRequestMethod();
-        $code = $input->get('code', '', 'STRING');
-        $this->url=Text::_('TokenURL')."=".$code;
-
-
-
-       $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL,$this->url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-
-
-       $responseString = $response = curl_exec($ch);
-        print_r($responseString);
-        $res = json_decode($responseString);
-        $username = $input->set('username',$res->user );
-        $password = $input->set('password', $responseString);
-        $this->login();
-    }	
-
-	public function login()
-	{
+        public function login()
+        {
 
             $input = $this->input->getInputForRequestMethod();
 
@@ -161,231 +160,231 @@ public function loginoidc() {
 
             $this->app->setUserState('users.login.form.data', array());
             $this->app->redirect(Route::_($this->app->getUserState('users.login.form.return'), false));
-	}
+        }
 
-	/**
-	 * Method to log out a user.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.6
-	 */
-	public function logout()
-	{
+        /**
+         * Method to log out a user.
+         *
+         * @return  void
+         *
+         * @since   1.6
+         */
+        public function logout()
+        {
 
-		$app = $this->app;
+                $app = $this->app;
 
-		// Prepare the logout options.
-		$options = array(
-			'clientid' => $app->get('shared_session', '0') ? null : 0,
-		);
+                // Prepare the logout options.
+                $options = array(
+                        'clientid' => $app->get('shared_session', '0') ? null : 0,
+                );
 
-		// Perform the log out.
-		$error = $app->logout(null, $options);
+                // Perform the log out.
+                $error = $app->logout(null, $options);
 
-		$input = $app->input->getInputForRequestMethod();
+                $input = $app->input->getInputForRequestMethod();
 
-		// Check if the log out succeeded.
-		if ($error instanceof \Exception)
-		{
-			$app->redirect(Route::_('index.php?option=com_users&view=login', false));
-		}
+                // Check if the log out succeeded.
+                if ($error instanceof \Exception)
+                {
+                        $app->redirect(Route::_('index.php?option=com_users&view=login', false));
+                }
 
-		// Get the return URL from the request and validate that it is internal.
-		$return = $input->get('return', '', 'BASE64');
-		$return = base64_decode($return);
+                // Get the return URL from the request and validate that it is internal.
+                $return = $input->get('return', '', 'BASE64');
+                $return = base64_decode($return);
 
-		// Check for a simple menu item id
-		if (is_numeric($return))
-		{
-			if (Multilanguage::isEnabled())
-			{
-				$db = Factory::getDbo();
-				$query = $db->getQuery(true)
-					->select($db->quoteName('language'))
-					->from($db->quoteName('#__menu'))
-					->where($db->quoteName('client_id') . ' = 0')
-					->where($db->quoteName('id') . ' = :id')
-					->bind(':id', $return, ParameterType::INTEGER);
+                // Check for a simple menu item id
+                if (is_numeric($return))
+                {
+                        if (Multilanguage::isEnabled())
+                        {
+                                $db = Factory::getDbo();
+                                $query = $db->getQuery(true)
+                                        ->select($db->quoteName('language'))
+                                        ->from($db->quoteName('#__menu'))
+                                        ->where($db->quoteName('client_id') . ' = 0')
+                                        ->where($db->quoteName('id') . ' = :id')
+                                        ->bind(':id', $return, ParameterType::INTEGER);
 
-				$db->setQuery($query);
+                                $db->setQuery($query);
 
-				try
-				{
-					$language = $db->loadResult();
-				}
-				catch (\RuntimeException $e)
-				{
-					return;
-				}
+                                try
+                                {
+                                        $language = $db->loadResult();
+                                }
+                                catch (\RuntimeException $e)
+                                {
+                                        return;
+                                }
 
-				if ($language !== '*')
-				{
-					$lang = '&lang=' . $language;
-				}
-				else
-				{
-					$lang = '';
-				}
-			}
-			else
-			{
-				$lang = '';
-			}
+                                if ($language !== '*')
+                                {
+                                        $lang = '&lang=' . $language;
+                                }
+                                else
+                                {
+                                        $lang = '';
+                                }
+                        }
+                        else
+                        {
+                                $lang = '';
+                        }
 
-			$return = 'index.php?Itemid=' . $return . $lang;
-		}
-		else
-		{
-			// Don't redirect to an external URL.
-			if (!Uri::isInternal($return))
-			{
-				$return = '';
-			}
-		}
+                        $return = 'index.php?Itemid=' . $return . $lang;
+                }
+                else
+                {
+                        // Don't redirect to an external URL.
+                        if (!Uri::isInternal($return))
+                        {
+                                $return = '';
+                        }
+                }
 
-		// In case redirect url is not set, redirect user to homepage
-		if (empty($return))
-		{
-			$return = Uri::root();
-		}
+                // In case redirect url is not set, redirect user to homepage
+                if (empty($return))
+                {
+                        $return = Uri::root();
+                }
 
-		// Redirect the user.
-		$app->redirect(Route::_($return, false));
-	}
+                // Redirect the user.
+                $app->redirect(Route::_($return, false));
+        }
 
-	/**
-	 * Method to logout directly and redirect to page.
-	 *
-	 * @return  void
-	 *
-	 * @since   3.5
-	 */
-	public function menulogout()
-	{
-		// Get the ItemID of the page to redirect after logout
-		$app    = $this->app;
-		$active = $app->getMenu()->getActive();
-		$itemid = $active ? $active->getParams()->get('logout') : 0;
+        /**
+         * Method to logout directly and redirect to page.
+         *
+         * @return  void
+         *
+         * @since   3.5
+         */
+        public function menulogout()
+        {
+                // Get the ItemID of the page to redirect after logout
+                $app    = $this->app;
+                $active = $app->getMenu()->getActive();
+                $itemid = $active ? $active->getParams()->get('logout') : 0;
 
-		// Get the language of the page when multilang is on
-		if (Multilanguage::isEnabled())
-		{
-			if ($itemid)
-			{
-				$db = Factory::getDbo();
-				$query = $db->getQuery(true)
-					->select($db->quoteName('language'))
-					->from($db->quoteName('#__menu'))
-					->where($db->quoteName('client_id') . ' = 0')
-					->where($db->quoteName('id') . ' = :id')
-					->bind(':id', $itemid, ParameterType::INTEGER);
+                // Get the language of the page when multilang is on
+                if (Multilanguage::isEnabled())
+                {
+                        if ($itemid)
+                        {
+                                $db = Factory::getDbo();
+                                $query = $db->getQuery(true)
+                                        ->select($db->quoteName('language'))
+                                        ->from($db->quoteName('#__menu'))
+                                        ->where($db->quoteName('client_id') . ' = 0')
+                                        ->where($db->quoteName('id') . ' = :id')
+                                        ->bind(':id', $itemid, ParameterType::INTEGER);
 
-				$db->setQuery($query);
+                                $db->setQuery($query);
 
-				try
-				{
-					$language = $db->loadResult();
-				}
-				catch (\RuntimeException $e)
-				{
-					return;
-				}
+                                try
+                                {
+                                        $language = $db->loadResult();
+                                }
+                                catch (\RuntimeException $e)
+                                {
+                                        return;
+                                }
 
-				if ($language !== '*')
-				{
-					$lang = '&lang=' . $language;
-				}
-				else
-				{
-					$lang = '';
-				}
+                                if ($language !== '*')
+                                {
+                                        $lang = '&lang=' . $language;
+                                }
+                                else
+                                {
+                                        $lang = '';
+                                }
 
-				// URL to redirect after logout
-				$url = 'index.php?Itemid=' . $itemid . $lang;
-			}
-			else
-			{
-				// Logout is set to default. Get the home page ItemID
-				$lang_code = $app->input->cookie->getString(ApplicationHelper::getHash('language'));
-				$item      = $app->getMenu()->getDefault($lang_code);
-				$itemid    = $item->id;
+                                // URL to redirect after logout
+                                $url = 'index.php?Itemid=' . $itemid . $lang;
+                        }
+                        else
+                        {
+                                // Logout is set to default. Get the home page ItemID
+                                $lang_code = $app->input->cookie->getString(ApplicationHelper::getHash('language'));
+                                $item      = $app->getMenu()->getDefault($lang_code);
+                                $itemid    = $item->id;
 
-				// Redirect to Home page after logout
-				$url = 'index.php?Itemid=' . $itemid;
-			}
-		}
-		else
-		{
-			// URL to redirect after logout, default page if no ItemID is set
-			$url = $itemid ? 'index.php?Itemid=' . $itemid : Uri::root();
-		}
+                                // Redirect to Home page after logout
+                                $url = 'index.php?Itemid=' . $itemid;
+                        }
+                }
+                else
+                {
+                        // URL to redirect after logout, default page if no ItemID is set
+                        $url = $itemid ? 'index.php?Itemid=' . $itemid : Uri::root();
+                }
 
-		// Logout and redirect
-		$this->setRedirect('index.php?option=com_users&task=user.logout&' . Session::getFormToken() . '=1&return=' . base64_encode($url));
-	}
+                // Logout and redirect
+                $this->setRedirect('index.php?option=com_users&task=user.logout&' . Session::getFormToken() . '=1&return=' . base64_encode($url));
+        }
 
-	/**
-	 * Method to request a username reminder.
-	 *
-	 * @return  boolean
-	 *
-	 * @since   1.6
-	 */
-	public function remind()
-	{
-		// Check the request token.
-		$this->checkToken('post');
+        /**
+         * Method to request a username reminder.
+         *
+         * @return  boolean
+         *
+         * @since   1.6
+         */
+        public function remind()
+        {
+                // Check the request token.
+                $this->checkToken('post');
 
-		$app   = $this->app;
+                $app   = $this->app;
 
-		/** @var \Joomla\Component\Users\Site\Model\RemindModel $model */
-		$model = $this->getModel('Remind', 'Site');
-		$data  = $this->input->post->get('jform', array(), 'array');
+                /** @var \Joomla\Component\Users\Site\Model\RemindModel $model */
+                $model = $this->getModel('Remind', 'Site');
+                $data  = $this->input->post->get('jform', array(), 'array');
 
-		// Submit the username remind request.
-		$return = $model->processRemindRequest($data);
+                // Submit the username remind request.
+                $return = $model->processRemindRequest($data);
 
-		// Check for a hard error.
-		if ($return instanceof \Exception)
-		{
-			// Get the error message to display.
-			$message = $app->get('error_reporting')
-				? $return->getMessage()
-				: Text::_('COM_USERS_REMIND_REQUEST_ERROR');
+                // Check for a hard error.
+                if ($return instanceof \Exception)
+                {
+                        // Get the error message to display.
+                        $message = $app->get('error_reporting')
+                                ? $return->getMessage()
+                                : Text::_('COM_USERS_REMIND_REQUEST_ERROR');
 
-			// Go back to the complete form.
-			$this->setRedirect(Route::_('index.php?option=com_users&view=remind', false), $message, 'error');
+                        // Go back to the complete form.
+                        $this->setRedirect(Route::_('index.php?option=com_users&view=remind', false), $message, 'error');
 
-			return false;
-		}
+                        return false;
+                }
 
-		if ($return === false)
-		{
-			// Go back to the complete form.
-			$message = Text::sprintf('COM_USERS_REMIND_REQUEST_FAILED', $model->getError());
-			$this->setRedirect(Route::_('index.php?option=com_users&view=remind', false), $message, 'notice');
+                if ($return === false)
+                {
+                        // Go back to the complete form.
+                        $message = Text::sprintf('COM_USERS_REMIND_REQUEST_FAILED', $model->getError());
+                        $this->setRedirect(Route::_('index.php?option=com_users&view=remind', false), $message, 'notice');
 
-			return false;
-		}
+                        return false;
+                }
 
-		// Proceed to the login form.
-		$message = Text::_('COM_USERS_REMIND_REQUEST_SUCCESS');
-		$this->setRedirect(Route::_('index.php?option=com_users&view=login', false), $message);
+                // Proceed to the login form.
+                $message = Text::_('COM_USERS_REMIND_REQUEST_SUCCESS');
+                $this->setRedirect(Route::_('index.php?option=com_users&view=login', false), $message);
 
-		return true;
-	}
+                return true;
+        }
 
-	/**
-	 * Method to resend a user.
-	 *
-	 * @return  void
-	 *
-	 * @since   1.6
-	 */
-	public function resend()
-	{
-		// Check for request forgeries
-		// $this->checkToken('post');
-	}
+        /**
+         * Method to resend a user.
+         *
+         * @return  void
+         *
+         * @since   1.6
+         */
+        public function resend()
+        {
+                // Check for request forgeries
+                // $this->checkToken('post');
+        }
 }
